@@ -1,3 +1,5 @@
+# Before running, run command in terminal:
+# pip install -U openai-whisper
 import whisper
 
 model = whisper.load_model("turbo")
