@@ -1,5 +1,5 @@
 {
-  "name": "edugen",
+  "name": "EduGen",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,6 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ffmpeg/core": "^0.12.10",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@mantine/core": "^7.17.0",
+    "@mantine/hooks": "^7.17.0",
+    "axios": "^1.7.9",
+    "ffmpeg.js": "^4.2.9003",
+    "openai": "^4.85.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
