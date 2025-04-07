@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import './App.css';
+import { Upload, FileText, Sparkles, HelpCircle } from 'lucide-react';
 import { Button, FileInput, Text, Loader, Container, Title, Radio } from "@mantine/core";
 import OpenAI from "openai";
 import axios from "axios";
@@ -70,7 +72,8 @@ function App() {
 
       <FileInput placeholder="Insert Video (MP4, MKV)" onChange={handleFileChange} style={{ marginBottom: "20px" }} />
 
-      <Button onClick={handleUpload} disabled={loading}>
+      <Button onClick={handleUpload} disabled={loading} className="icon-button">
+      <Upload className="button-icon" />
         {loading ? <Loader size="sm" /> : "Upload & Transcribe"}
       </Button>
 
@@ -81,7 +84,8 @@ function App() {
         </Container>
       )}
 
-      <Button onClick={handleSummarize} disabled={loading || !transcription} style={{ marginTop: "20px" }}>
+      <Button onClick={handleSummarize} disabled={loading || !transcription} style={{ marginTop: "20px" }} className="icon-button">
+      <Sparkles className="button-icon" />
         {loading ? <Loader size="sm" /> : "Generate Summary"}
       </Button>
 
@@ -91,7 +95,8 @@ function App() {
           <Text>{summary}</Text>
         </Container>
       )}
-      <Button onClick={handleQuestion} disabled={loading || !transcription} style={{ marginTop: "20px" }}>
+      <Button onClick={handleQuestion} disabled={loading || !transcription} style={{ marginTop: "20px" }} className="icon-button">
+      <HelpCircle className="button-icon" />
         {loading ? <Loader size="sm" /> : "Generate Questions"}
       </Button>
 
@@ -203,7 +208,7 @@ function MultipleChoiceQuestion({ questionData }) {
           onChange={() => handleOptionChange(index + 1)}
         />
       ))}
-      <Button onClick={handleSubmit} disabled={selectedOption === null} style={{ marginTop: "10px" }}>
+      <Button onClick={handleSubmit} disabled={selectedOption === null} style={{ marginTop: "10px" }} className="icon-button">
         Submit Answer
       </Button>
 

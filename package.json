@@ -16,6 +16,8 @@
     "@mantine/hooks": "^7.17.0",
     "axios": "^1.7.9",
     "ffmpeg.js": "^4.2.9003",
+    "lucide-react": "^0.487.0",
+    "ollama": "^0.5.14",
     "openai": "^4.85.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
