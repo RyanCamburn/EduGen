@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -11,9 +11,34 @@ import {
   Toolbar,
   Container,
 } from '@mui/material';
+import axios from 'axios';
 
 export default function ResultPage() {
   const navigate = useNavigate();
+  const { state } = useLocation();
+  const { transcription, summary } = state || {};
+  const [questionText, setQuestionText] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+
+  const generateQuestionFromText = async (text) => {
+    try {
+      const response = await axios.post('http://localhost:3000/video/question', {
+        text,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Question generation failed:', error);
+      return 'Error generating question.';
+    }
+  };
+
+  const handleGenerateQuestion = async () => {
+    if (!transcription) return;
+    setLoading(true);
+    const question = await generateQuestionFromText(transcription);
+    setQuestionText(question);
+    setLoading(false);
+  };
 
   return (
     <Box sx={{ backgroundColor: '#1a1a2e', minHeight: '100vh' }}>
@@ -29,9 +54,6 @@ export default function ResultPage() {
             </Typography>
           </Stack>
           <Stack direction="row" spacing={2}>
-            <Button variant="outlined" onClick={() => alert('Upload coming soon')}>
-              Upload
-            </Button>
             <Button variant="outlined" onClick={() => navigate('/')}>
               Home
             </Button>
@@ -93,9 +115,7 @@ export default function ResultPage() {
                 <Typography variant="h6" gutterBottom color="black">
                   Video Transcription
                 </Typography>
-                <Typography color="black">
-                  Lorem ipsum dolor sit amet... (mock transcription text)
-                </Typography>
+                <Typography color="black">{transcription || 'No data received.'}</Typography>
               </Paper>
 
               <Paper
@@ -111,9 +131,7 @@ export default function ResultPage() {
                 <Typography variant="h6" gutterBottom color="black">
                   Video Summary
                 </Typography>
-                <Typography color="black">
-                  Lorem ipsum dolor sit amet... (mock summary text)
-                </Typography>
+                <Typography color="black">{summary || 'No data received.'}</Typography>
               </Paper>
             </Box>
           </Grid>
@@ -121,12 +139,25 @@ export default function ResultPage() {
 
         {/* Buttons */}
         <Stack direction="row" spacing={2} justifyContent="center" mt={5}>
-          <Button variant="contained" size="large">
+          <Button variant="contained" size="large" onClick={() => alert('Upload coming soon')}>
             Download Result
           </Button>
-          <Button variant="outlined" size="large">
-            Generate Summary
+        </Stack>
+        <Stack direction="column" spacing={2} alignItems="center" mt={4}>
+          <Button variant="contained" onClick={handleGenerateQuestion} disabled={loading}>
+            {loading ? 'Generating...' : 'Generate Questions'}
           </Button>
+
+          {questionText && (
+            <Paper sx={{ p: 2, backgroundColor: '#f4f4f4', width: '100%', maxWidth: 800 }}>
+              <Typography variant="h6" gutterBottom color="black">
+                Generated Question
+              </Typography>
+              <Typography color="black" sx={{ whiteSpace: 'pre-wrap' }}>
+                {questionText}
+              </Typography>
+            </Paper>
+          )}
         </Stack>
       </Container>
     </Box>
