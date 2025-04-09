@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Button, Stack, Typography } from '@mui/material';
 
-export default function FileUpload() {
+export default function FileUpload({ onFileSelect }) {
   const [fileName, setFileName] = useState('');
 
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
     if (file) {
       setFileName(file.name);
+      onFileSelect(file);
     }
   };
 
