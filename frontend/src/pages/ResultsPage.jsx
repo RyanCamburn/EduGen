@@ -39,28 +39,83 @@ export default function ResultPage() {
         </Toolbar>
       </AppBar>
 
-      {/* Content */}
+      {/* Main Content */}
       <Container sx={{ py: 5 }}>
-        <Grid container spacing={4} justifyContent="center">
-          <Grid item xs={12} md={6}>
-            <Paper elevation={3} sx={{ p: 3, backgroundColor: '#e0e0e0', minHeight: '300px' }}>
-              <Typography variant="h6" color="black" gutterBottom>
-                Video Transcription
+        <Grid container spacing={4} alignItems="flex-start">
+          {/* Sidebar */}
+          <Grid item xs={12} md={3}>
+            <Paper
+              elevation={3}
+              sx={{
+                p: 2,
+                backgroundColor: '#2c2c3a',
+                color: 'white',
+                height: '100%',
+              }}
+            >
+              <Typography variant="h6" gutterBottom>
+                Previous Transcriptions
               </Typography>
-              <Typography color="gray">
-                Lorem ipsum dolor sit amet... (mock transcription text)
-              </Typography>
+              <Stack spacing={2}>
+                <Button variant="outlined" fullWidth color="inherit">
+                  Lecture 1
+                </Button>
+                <Button variant="outlined" fullWidth color="inherit">
+                  Lecture 2
+                </Button>
+                <Button variant="outlined" fullWidth color="inherit">
+                  Meeting Notes
+                </Button>
+              </Stack>
             </Paper>
           </Grid>
-          <Grid item xs={12} md={6}>
-            <Paper elevation={3} sx={{ p: 3, backgroundColor: '#d4d4d4', minHeight: '300px' }}>
-              <Typography variant="h6" color="black" gutterBottom>
-                Video Summary
-              </Typography>
-              <Typography color="gray">
-                Lorem ipsum dolor sit amet... (mock summary text)
-              </Typography>
-            </Paper>
+
+          {/* Right content: Centered Transcription & Summary cards */}
+          <Grid item xs={12} md={9}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: 4,
+                flexWrap: 'wrap',
+              }}
+            >
+              <Paper
+                elevation={3}
+                sx={{
+                  p: 3,
+                  backgroundColor: '#e0e0e0',
+                  minHeight: '300px',
+                  width: '350px',
+                  textAlign: 'left',
+                }}
+              >
+                <Typography variant="h6" gutterBottom color="black">
+                  Video Transcription
+                </Typography>
+                <Typography color="black">
+                  Lorem ipsum dolor sit amet... (mock transcription text)
+                </Typography>
+              </Paper>
+
+              <Paper
+                elevation={3}
+                sx={{
+                  p: 3,
+                  backgroundColor: '#d4d4d4',
+                  minHeight: '300px',
+                  width: '350px',
+                  textAlign: 'left',
+                }}
+              >
+                <Typography variant="h6" gutterBottom color="black">
+                  Video Summary
+                </Typography>
+                <Typography color="black">
+                  Lorem ipsum dolor sit amet... (mock summary text)
+                </Typography>
+              </Paper>
+            </Box>
           </Grid>
         </Grid>
 
