@@ -1,9 +1,43 @@
 import React, { useState } from "react";
+import PropTypes from 'prop-types';
 import { Button, FileInput, Text, Loader, Container, Title, Radio } from "@mantine/core";
 import OpenAI from "openai";
 import axios from "axios";
 const openai = new OpenAI({ apiKey: "YOUR_API_KEY_HERE", dangerouslyAllowBrowser: true });
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Application error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <Container style={{ textAlign: "center", padding: "50px" }}>
+          <Title order={1}>Something went wrong</Title>
+          <Button onClick={() => this.setState({ hasError: false })}>
+            Try again
+          </Button>
+        </Container>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+ErrorBoundary.propTypes = {
+  children: PropTypes.node.isRequired
+};
 
 function App() {
   const [file, setFile] = useState(null);
@@ -65,43 +99,64 @@ function App() {
   };
 
   return (
-    <Container style={{ textAlign: "center", padding: "50px", background: "#282828", color: "white", minHeight: "100vh" }}>
-      <Title order={1} style={{ marginBottom: "20px" }}>EduGen</Title>
+    <ErrorBoundary>
+      <Container 
+        style={{ 
+          textAlign: "center", 
+          padding: "50px", 
+          background: "#282828", 
+          color: "white", 
+          minHeight: "100vh",
+          maxWidth: "100%",
+          width: "100%"
+        }}
+      >
+        <Title order={1} style={{ marginBottom: "20px" }}>EduGen</Title>
 
-      <FileInput placeholder="Insert Video (MP4, MKV)" onChange={handleFileChange} style={{ marginBottom: "20px" }} />
+        <FileInput
+          placeholder="Insert Audio/Video (MP3, WAV, MP4, MKV)"
+          onChange={handleFileChange}
+          style={{ marginBottom: "20px" }}
+          accept="video/mp4,video/x-matroska,audio/mpeg,audio/wav"
+        />
 
-      <Button onClick={handleUpload} disabled={loading}>
-        {loading ? <Loader size="sm" /> : "Upload & Transcribe"}
-      </Button>
+        <Button onClick={handleUpload} disabled={loading}>
+          {loading ? <Loader size="sm" /> : "Upload & Transcribe"}
+        </Button>
 
-      {transcription && (
-        <Container>
-          <Text style={{ marginTop: "20px", color: "white", fontWeight: "bold" }}>Video Transcription:</Text>
-          <Text>{transcription}</Text>
-        </Container>
-      )}
+        {transcription && (
+          <Container>
+            <Text style={{ marginTop: "20px", color: "white", fontWeight: "bold" }}>Video Transcription:</Text>
+            <Text>{transcription}</Text>
+          </Container>
+        )}
 
-      <Button onClick={handleSummarize} disabled={loading || !transcription} style={{ marginTop: "20px" }}>
-        {loading ? <Loader size="sm" /> : "Generate Summary"}
-      </Button>
+        <Button onClick={handleSummarize} disabled={loading || !transcription} style={{ marginTop: "20px" }}>
+          {loading ? <Loader size="sm" /> : "Generate Summary"}
+        </Button>
 
-      {summary && (
-        <Container>
-          <Text style={{ marginTop: "20px", color: "white", fontWeight: "bold" }}>Video Summary:</Text>
-          <Text>{summary}</Text>
-        </Container>
-      )}
-      <Button onClick={handleQuestion} disabled={loading || !transcription} style={{ marginTop: "20px" }}>
-        {loading ? <Loader size="sm" /> : "Generate Questions"}
-      </Button>
+        {summary && (
+          <Container>
+            <Text style={{ marginTop: "20px", color: "white", fontWeight: "bold" }}>Video Summary:</Text>
+            <Text>{summary}</Text>
+          </Container>
+        )}
+        <Button onClick={handleQuestion} disabled={loading || !transcription} style={{ marginTop: "20px" }}>
+          {loading ? <Loader size="sm" /> : "Generate Questions"}
+        </Button>
 
-      {summary && (
-        <Container>
-          <Text style={{ marginTop: "20px", color: "white", fontWeight: "bold" }}>Questionaire:</Text>
-          <Text>{question}</Text>
-        </Container>
-      )}
-    </Container>
+        {summary && (
+          <Container>
+            <Text style={{ marginTop: "20px", color: "white", fontWeight: "bold" }}>Questionaire:</Text>
+            <Text>{question}</Text>
+          </Container>
+        )}
+
+        <Text size="sm" color="dimmed" style={{ marginTop: "5px" }}>
+          {loading ? "Processing..." : "Ready"}
+        </Text>
+      </Container>
+    </ErrorBoundary>
   );
 }
 
@@ -151,15 +206,48 @@ async function summarizeWithLlama(text) {
   }
 }
 
+// async function questionWithLlama(text) {
+//   try {
+//     const response = await axios.post("http://localhost:11434/api/generate", {
+//       model: "llama3.2",
+//       prompt: `Create one multiple choice question in json format, only respond with the question, the options, and the correct option for the question, no following explanation:\n\n${text}`,
+//       stream: false,
+//     });
+
+//     return response.data.response;
+//   } catch (error) {
+//     console.error("Error creating questions:", error);
+//     return "Creating questions failed.";
+//   }
+// }
+
 async function questionWithLlama(text) {
   try {
     const response = await axios.post("http://localhost:11434/api/generate", {
       model: "llama3.2",
-      prompt: `Create one multiple choice question in json format, only respond with the question, the options, and the correct option for the question, no following explanation:\n\n${text}`,
+      prompt: `Create one multiple choice question in json format with the following structure: 
+      {
+        "question": "Your question here",
+        "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+        "correctOption": 1
+      }
+      
+      Only respond with valid JSON for the following text:\n\n${text}`,
       stream: false,
     });
 
-    return response.data.response;
+    // Validate JSON response
+    try {
+      JSON.parse(response.data.response);
+      return response.data.response;
+    } catch (parseError) {
+      console.error("Invalid JSON response:", parseError);
+      return JSON.stringify({
+        question: "Could not generate a valid question",
+        options: ["Try again"],
+        correctOption: 1
+      });
+    }
   } catch (error) {
     console.error("Error creating questions:", error);
     return "Creating questions failed.";
@@ -176,7 +264,7 @@ function MultipleChoiceQuestion({ questionData }) {
     parsedQuestion = JSON.parse(questionData);
   } catch (error) {
     console.error("Error parsing question JSON:", error);
-    return <Text>Error parsing the question data.</Text>;
+    return <div>Error parsing the question data.</div>;
   }
 
   const handleOptionChange = (value) => {
@@ -192,26 +280,38 @@ function MultipleChoiceQuestion({ questionData }) {
   };
 
   return (
-    <Container style={{ marginTop: "20px", textAlign: "left" }}>
-      <Text style={{ fontWeight: "bold" }}>{parsedQuestion.question}</Text>
+    <div style={{ marginTop: "20px", textAlign: "left" }}>
+      <p style={{ fontWeight: "bold" }}>{parsedQuestion.question}</p>
       {parsedQuestion.options.map((option, index) => (
-        <Radio
-          key={index}
-          label={option}
-          value={String(index + 1)}
-          checked={selectedOption === index + 1}
-          onChange={() => handleOptionChange(index + 1)}
-        />
+        <div key={index}>
+          <input
+            type="radio"
+            id={`option-${index}`}
+            name="quiz-option"
+            value={String(index + 1)}
+            checked={selectedOption === index + 1}
+            onChange={(e) => handleOptionChange(e.target.value)}
+          />
+          <label htmlFor={`option-${index}`}>{option}</label>
+        </div>
       ))}
-      <Button onClick={handleSubmit} disabled={selectedOption === null} style={{ marginTop: "10px" }}>
+      <Button 
+        onClick={handleSubmit} 
+        disabled={selectedOption === null} 
+        style={{ marginTop: "10px" }}
+      >
         Submit Answer
       </Button>
 
       {isCorrect !== null && (
-        <Text style={{ marginTop: "10px", color: isCorrect ? "lightgreen" : "red", fontWeight: "bold" }}>
+        <p style={{ 
+          marginTop: "10px", 
+          color: isCorrect ? "lightgreen" : "red", 
+          fontWeight: "bold" 
+        }}>
           {isCorrect ? "Correct!" : "Wrong! Try again."}
-        </Text>
+        </p>
       )}
-    </Container>
+    </div>
   );
 }
