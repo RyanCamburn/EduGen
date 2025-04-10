@@ -12,6 +12,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import FileUpload from '../components/FileUpload';
+import logo from '../assets/logo.svg';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ export default function HomePage() {
         <Toolbar sx={{ justifyContent: 'space-between' }}>
           <Stack direction="row" spacing={2} alignItems="center">
             <Button variant="contained" size="small" onClick={() => navigate('/')}>
-              Logo
+              <img src={logo} alt="Logo" style={{ width: 50, height: 50 }} />
             </Button>
             <Typography variant="h6" color="white">
               EduGen
