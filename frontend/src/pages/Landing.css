@@ -1,0 +1,85 @@
+.edugen-landing {
+    font-family: 'Segoe UI', sans-serif;
+    background: #fefefe;
+    color: #1a1a1a;
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  .hero {
+    padding: 3rem 1rem;
+    background: linear-gradient(to bottom right, #dfe9f3, #ffffff);
+    border-radius: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  
+  .hero p {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .cta-button {
+    background-color: #3b82f6;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+  }
+  
+  .cta-button:hover {
+    background-color: #2563eb;
+  }
+  
+  .features {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin: 3rem 0;
+  }
+  
+  @media (min-width: 768px) {
+    .features {
+      flex-direction: row;
+      justify-content: center;
+    }
+  }
+  
+  .feature {
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    padding: 1.5rem;
+    border-radius: 12px;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  
+  .feature h3 {
+    margin-bottom: 0.5rem;
+  }
+  
+  .mission {
+    margin: 4rem 0 2rem;
+  }
+  
+  .mission h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  footer {
+    margin-top: 3rem;
+    font-size: 0.9rem;
+    color: #6b7280;
+  }
+  
+  

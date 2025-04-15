@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage.jsx';
 import ResultPage from './pages/ResultsPage.jsx';
+import EduGenLanding from './pages/LandingPage.jsx';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 
 const darkTheme = createTheme({
@@ -21,7 +22,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <CssBaseline />
       <Router>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<EduGenLanding />} />
+          <Route path="/home" element={<HomePage />} />
           <Route path="/results" element={<ResultPage />} />
         </Routes>
       </Router>
