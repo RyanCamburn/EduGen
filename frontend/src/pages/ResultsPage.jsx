@@ -47,7 +47,7 @@ export default function ResultPage() {
       <AppBar position="static" sx={{ backgroundColor: '#3d3d50' }}>
         <Toolbar sx={{ justifyContent: 'space-between' }}>
           <Stack direction="row" spacing={2} alignItems="center">
-            <Button size="small" variant="contained" onClick={() => navigate('/')}>
+            <Button size="small" variant="contained" onClick={() => navigate('/home')}>
               <img src={logo} alt="Logo" style={{ width: 50, height: 50 }} />
             </Button>
             <Typography variant="h6" color="white">
@@ -55,7 +55,7 @@ export default function ResultPage() {
             </Typography>
           </Stack>
           <Stack direction="row" spacing={2}>
-            <Button variant="outlined" onClick={() => navigate('/')}>
+            <Button variant="outlined" onClick={() => navigate('/home')}>
               Home
             </Button>
           </Stack>

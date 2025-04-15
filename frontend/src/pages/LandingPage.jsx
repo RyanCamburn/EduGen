@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import "./Landing.css";
 
 function EduGenLanding() {
-  console.log("LandingPage")
   const navigate = useNavigate();
   return (
     <div className="edugen-landing">

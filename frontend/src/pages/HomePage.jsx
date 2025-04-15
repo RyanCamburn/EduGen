@@ -98,9 +98,9 @@ export default function HomePage() {
           </Typography>
         </Box>
 
-        <FileUpload onFileSelect={setFile} />
+        <FileUpload onFileSelect={setFile}/>
 
-        <Button variant="contained" size="large" onClick={handleGenerate} disabled={loading}>
+        <Button variant="contained" size="large" onClick={handleGenerate} disabled={loading}  sx={{ mt: 1 }}>
           {loading ? <CircularProgress size={24} color="inherit" /> : 'Generate'}
         </Button>
       </Container>
