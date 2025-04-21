@@ -20,9 +20,7 @@ export default function ResultPage() {
   const { transcription, summary } = state || {};
   const [questionText, setQuestionText] = React.useState('');
   const [loading, setLoading] = React.useState(false);
-
-  console.log('Received in ResultsPage:', { transcription, summary });
-
+  
   const generateQuestionFromText = async (text) => {
     try {
       const response = await axios.post('http://localhost:3000/video/question', {

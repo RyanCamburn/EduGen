@@ -26,8 +26,7 @@ export default function HomePage() {
     }
 
     setLoading(true);
-    console.log('Sending file:', file);
-
+    
     try {
       // 1. Transcribe
       const formData = new FormData();
@@ -39,10 +38,11 @@ export default function HomePage() {
         },
       });
 
+
       const transcription = transcribeRes.data.transcription;
 
       const summary = transcribeRes.data.summary;
-
+      
       // 3. Navigate to result page with both
       navigate('/results', {
         state: {

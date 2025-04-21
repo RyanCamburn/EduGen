@@ -134,7 +134,6 @@ async function transcribeVideoPath(filePath) {
     const text = await transcribeFileToText(audioPath);
     fullTranscript += text + "\n";
   }
-
   console.log(fullTranscript);
 
   // Cleanup
