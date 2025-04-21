@@ -13,6 +13,6 @@ Put your OpenAPI Key in the .env in `backend/.env`
 - This runs the express server
   `cd backend`
   `npm run start`
--In another seperate terminal run
--This runs the AI model
+- In another seperate terminal run
+- This runs the AI model
   `ollama run llama3.2`
