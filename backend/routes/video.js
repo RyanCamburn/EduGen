@@ -34,7 +34,6 @@ router.post("/transcribe", upload.single("file"), async (req, res) => {
       "⬅️ Final transcription sent to client:",
       transcription.slice(0, 200)
     ); // preview
-
     res.status(200).json({ transcription, summary });
   } catch (error) {
     res.status(500).json({ error: error.message });
