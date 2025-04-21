@@ -1,18 +1,36 @@
 # EduGen
 
-Upload .mp3/.mp4 file to generate transcription, then based on that transcription you can use llama3.2 to generate content
+Upload `.mp3` or `.mp4` files to generate transcriptions. Based on the transcription, you can use `llama3.2` to generate content.
 
-Instruction to run
-Put your OpenAPI Key in the .env in `backend/.env`
+## Instructions to Run
 
-- In terminal run
-- This runs the react page
-  `cd frontent`
-  `npm run dev`
-- In seperate terminal run
-- This runs the express server
-  `cd backend`
-  `npm run start`
-- In another seperate terminal run
-- This runs the AI model
-  `ollama run llama3.2`
+1. **Set Up Your OpenAI API Key**
+   - Add your OpenAI API key to the `.env` file located in `backend/.env`.
+
+2. **Run the Application**
+   - Open a terminal and follow these steps:
+     
+     ### Frontend
+     - Navigate to the `frontend` directory and start the React application:
+       ```bash
+       cd frontend
+       npm run dev
+       ```
+
+     ### Backend
+     - In a separate terminal, navigate to the `backend` directory and start the Express server:
+       ```bash
+       cd backend
+       npm start
+       ```
+
+     ### AI Model
+     - In another separate terminal, run the AI model:
+       ```bash
+       ollama run llama3.2
+       ```
+
+## Features
+- **File Upload:** Upload `.mp3` or `.mp4` files for transcription.
+- **Content Generation:** Generate content using `llama3.2` based on transcriptions.
+
