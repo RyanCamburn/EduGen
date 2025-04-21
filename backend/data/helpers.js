@@ -1,9 +1,17 @@
-import fs from 'fs-extra';
-import path from 'path';
-import ffmpeg from 'fluent-ffmpeg';
-import FormData from 'form-data';
-import axios from 'axios';
-import os from 'os';
+import fs from "fs-extra";
+import path from "path";
+import ffmpeg from "fluent-ffmpeg";
+import FormData from "form-data";
+import axios from "axios";
+import os from "os";
+import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+dotenv.config({ path: ".env.local" });
 
 const MAX_MB = 24;
 const CHUNK_DURATION_SECONDS = 300;
@@ -126,13 +134,13 @@ async function transcribeVideoPath(filePath) {
     const text = await transcribeFileToText(audioPath);
     fullTranscript += text + "\n";
   }
-
-  console.log("\n📝 Full Transcription:\n");
   console.log(fullTranscript);
 
   // Cleanup
   if (fileSizeMB > MAX_MB) await fs.remove(outputDir);
   await fs.remove(audioDir);
+
+  return fullTranscript;
 }
 
 export { transcribeVideoPath };

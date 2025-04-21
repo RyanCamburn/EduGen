@@ -26,7 +26,7 @@ export default function HomePage() {
     }
 
     setLoading(true);
-
+    
     try {
       // 1. Transcribe
       const formData = new FormData();
@@ -38,15 +38,11 @@ export default function HomePage() {
         },
       });
 
-      const transcription = transcribeRes.data;
 
-      // 2. Summarize
-      const summaryRes = await axios.post('http://localhost:3000/video/summarize', {
-        text: transcription,
-      });
+      const transcription = transcribeRes.data.transcription;
 
-      const summary = summaryRes.data;
-
+      const summary = transcribeRes.data.summary;
+      
       // 3. Navigate to result page with both
       navigate('/results', {
         state: {
