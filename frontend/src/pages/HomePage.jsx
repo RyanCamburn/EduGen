@@ -26,6 +26,7 @@ export default function HomePage() {
     }
 
     setLoading(true);
+    console.log('Sending file:', file);
 
     try {
       // 1. Transcribe
@@ -38,14 +39,9 @@ export default function HomePage() {
         },
       });
 
-      const transcription = transcribeRes.data;
+      const transcription = transcribeRes.data.transcription;
 
-      // 2. Summarize
-      const summaryRes = await axios.post('http://localhost:3000/video/summarize', {
-        text: transcription,
-      });
-
-      const summary = summaryRes.data;
+      const summary = transcribeRes.data.summary;
 
       // 3. Navigate to result page with both
       navigate('/results', {
