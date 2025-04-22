@@ -39,6 +39,13 @@ export default function ResultPage() {
     const question = await generateQuestionFromText(transcription);
     setQuestionText(question);
     setLoading(false);
+    navigate('/quiz', {
+      state: {
+        questions: Array.isArray(generatedQuestions)
+          ? generatedQuestions
+          : [generatedQuestions],
+      },
+    });
   };
 
   return (
