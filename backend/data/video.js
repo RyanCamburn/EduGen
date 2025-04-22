@@ -15,7 +15,7 @@ const transcribeVideo = async (videoPath) => {
 const summarizeTranscription = async (transcription) => {
   try {
     const response = await axios.post("http://localhost:11434/api/generate", {
-      model: "gemma3:4b",
+      model: "llama3.2",
       prompt: `Summarize the following text: ${transcription}`,
       stream: false,
     });

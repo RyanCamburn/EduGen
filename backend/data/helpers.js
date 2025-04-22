@@ -11,7 +11,7 @@ import { dirname } from "path";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-dotenv.config({ path: ".env.local" });
+dotenv.config({ path: ".env" });
 
 const MAX_MB = 24;
 const CHUNK_DURATION_SECONDS = 300;
