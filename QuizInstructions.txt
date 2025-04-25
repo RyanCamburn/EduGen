@@ -1,0 +1,3 @@
+# Just run these :
+ - npm install express cors axios
+ - node server.js
