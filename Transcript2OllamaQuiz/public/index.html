@@ -6,6 +6,7 @@
         body { font-family: Arial; max-width: 800px; margin: 0 auto; padding: 20px; }
         textarea { width: 100%; height: 200px; }
         #quizOutput { margin-top: 20px; white-space: pre-wrap; }
+        .progress { margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -19,48 +20,51 @@
     <div>
         <button id="generateBtn">Generate Quiz</button>
         <div id="status"></div>
+        <div id="progress" class="progress"></div>
     </div>
     
     <div id="quizOutput"></div>
 
     <script>
-        // Script 4 Generate Quiz Button
         document.getElementById('generateBtn').addEventListener('click', async function() {
-            // Gets text file (not necessary for implementation)
             const file = document.getElementById('fileUpload').files[0];
             if (!file) {
                 document.getElementById('status').textContent = "Please select a file";
                 return;
             }
             
-            // Disable button while finding proccess (not necessary for implementation)
             const btn = this;
             btn.disabled = true;
-            document.getElementById('status').textContent = "Generating quiz...";
+            document.getElementById('status').textContent = "Processing...";
+            document.getElementById('progress').textContent = "";
+            document.getElementById('quizOutput').textContent = "";
 
-            // Main code (does not need to be in catch, ignore) 
             try {
-                // Read file as text (not necessary for implementation)
                 const transcript = await new Promise((resolve) => {
                     const reader = new FileReader();
                     reader.onload = (e) => resolve(e.target.result);
                     reader.readAsText(file);
                 });
 
-                // MAIN PART OVER HERE (Make asynch request to server) *****************************
+                // Show file size
+                document.getElementById('progress').textContent = 
+                    `Processing ${Math.round(transcript.length/1000)}k document...`;
+
                 const response = await fetch('http://localhost:3000/api/generate-quiz', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ transcript }) // This parts gonna change depending on if response is already text
+                    body: JSON.stringify({ transcript })
                 });
 
-                // Waits 4 response then puts it in quizOutput
                 const data = await response.json();
                 document.getElementById('quizOutput').textContent = data.quiz;
                 document.getElementById('status').textContent = "Quiz generated!";
-
-                // ************************************************************************************ 
+                document.getElementById('progress').textContent = 
+                    `Processed in ${data.processedChunks} chunks`;
                 
+            } catch (error) {
+                document.getElementById('status').textContent = "Error generating quiz";
+                document.getElementById('quizOutput').textContent = error.message;
             } finally {
                 btn.disabled = false;
             }
