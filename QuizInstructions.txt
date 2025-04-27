@@ -1,6 +1,0 @@
-# Just run these :
- - npm install express cors axios
- - node server.js
-
-# Also by the way if you give it too much text it will ignore
-  the prompt and just give you a summary of the text

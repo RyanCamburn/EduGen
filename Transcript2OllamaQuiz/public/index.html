@@ -3,70 +3,276 @@
 <head>
     <title>Quiz Generator</title>
     <style>
-        body { font-family: Arial; max-width: 800px; margin: 0 auto; padding: 20px; }
-        textarea { width: 100%; height: 200px; }
-        #quizOutput { margin-top: 20px; white-space: pre-wrap; }
-        .progress { margin-top: 10px; }
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .upload-section {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        #fileUpload {
+            display: block;
+            margin: 10px 0;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+        #generateBtn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+        #generateBtn:hover {
+            background-color: #45a049;
+        }
+        #generateBtn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .status-info {
+            background-color: #e7f3fe;
+            color: #2196F3;
+        }
+        .status-success {
+            background-color: #ddffdd;
+            color: #4CAF50;
+        }
+        .status-error {
+            background-color: #ffdddd;
+            color: #f44336;
+        }
+        #progress {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        #quizOutput {
+            margin-top: 30px;
+        }
+        .question {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .question h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .options {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .options li {
+            padding: 8px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .correct {
+            background: #ddffdd !important;
+            border-left: 4px solid #4CAF50;
+        }
+        .blank-question {
+            font-size: 1.1em;
+            margin: 15px 0;
+        }
+        .blank-answer {
+            font-weight: bold;
+            color: #4CAF50;
+            background: #f0fff0;
+            padding: 3px 6px;
+            border-radius: 3px;
+        }
+        .error-details {
+            background: #fff;
+            border: 1px solid #ffdddd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
     <h1>Lecture Quiz Generator</h1>
     
-    <div>
+    <div class="upload-section">
         <h2>Upload Lecture Transcript</h2>
-        <input type="file" id="fileUpload">
-    </div>
-    
-    <div>
+        <input type="file" id="fileUpload" accept=".txt,.md,.pdf,.docx">
         <button id="generateBtn">Generate Quiz</button>
-        <div id="status"></div>
-        <div id="progress" class="progress"></div>
+        <div id="status" class="status-info">Ready to upload lecture transcript</div>
+        <div id="progress"></div>
     </div>
     
     <div id="quizOutput"></div>
 
     <script>
-        document.getElementById('generateBtn').addEventListener('click', async function() {
-            const file = document.getElementById('fileUpload').files[0];
-            if (!file) {
-                document.getElementById('status').textContent = "Please select a file";
-                return;
-            }
-            
-            const btn = this;
-            btn.disabled = true;
-            document.getElementById('status').textContent = "Processing...";
-            document.getElementById('progress').textContent = "";
-            document.getElementById('quizOutput').textContent = "";
+        document.addEventListener('DOMContentLoaded', function() {
+            const generateBtn = document.getElementById('generateBtn');
+            const fileUpload = document.getElementById('fileUpload');
+            const statusElement = document.getElementById('status');
+            const progressElement = document.getElementById('progress');
+            const quizOutput = document.getElementById('quizOutput');
 
-            try {
-                const transcript = await new Promise((resolve) => {
+            generateBtn.addEventListener('click', async function() {
+                const file = fileUpload.files[0];
+                if (!file) {
+                    showError("Please select a file first");
+                    return;
+                }
+
+                generateBtn.disabled = true;
+                statusElement.textContent = "Processing lecture transcript...";
+                statusElement.className = "status-info";
+                progressElement.textContent = "";
+                quizOutput.innerHTML = "";
+
+                try {
+                    progressElement.textContent = `Reading ${formatFileSize(file.size)}...`;
+                    const transcript = await readFileAsText(file);
+
+                    progressElement.textContent = `Processing ${formatFileSize(transcript.length)} of text...`;
+
+                    const response = await fetch('http://localhost:3000/api/generate-quiz', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ transcript })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(
+                            errorData.error || errorData.message || `Server error: ${response.status}`
+                        );
+                    }
+
+                    const quizData = await response.json();
+                    
+                    if (quizData.questions && quizData.questions.length > 0) {
+                        renderQuiz(quizData);
+                        showSuccess(`Quiz generated with ${quizData.questions.length} questions`);
+                    } else {
+                        throw new Error("Received empty quiz from server");
+                    }
+                    
+                } catch (error) {
+                    console.error("Error:", error);
+                    showError(error.message);
+                    quizOutput.innerHTML = `
+                        <div class="error-details">
+                            <strong>Error Details:</strong><br>
+                            ${escapeHtml(error.message)}
+                        </div>
+                    `;
+                } finally {
+                    generateBtn.disabled = false;
+                }
+            });
+
+            function renderQuiz(quizData) {
+                quizOutput.innerHTML = `<h2>Generated Quiz</h2>`;
+                
+                const questionTypes = {
+                    "fill-blank": 0,
+                    "multiple-choice": 0
+                };
+
+                quizData.questions.forEach((question, index) => {
+                    questionTypes[question.type]++;
+                    
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = "question";
+                    
+                    let questionHTML = `<h3>${index + 1}. `;
+                    
+                    if (question.type === 'fill-blank') {
+                        questionHTML += `
+                            <div class="blank-question">${question.question}</div>
+                            <p>Answer: <span class="blank-answer">${question.correctAnswer}</span></p>
+                        `;
+                    } else {
+                        questionHTML += `${question.question}</h3>
+                            <ul class="options">
+                                ${question.options.map(option => `
+                                    <li class="${option === question.correctOption ? 'correct' : ''}">
+                                        ${option}
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        `;
+                    }
+                    
+                    questionDiv.innerHTML = questionHTML;
+                    quizOutput.appendChild(questionDiv);
+                });
+
+                progressElement.innerHTML = `
+                    <small>
+                        ${questionTypes["fill-blank"]} fill-in-the-blank questions<br>
+                        ${questionTypes["multiple-choice"]} multiple-choice questions
+                    </small>
+                `;
+            }
+
+            function readFileAsText(file) {
+                return new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = (error) => reject(new Error("Failed to read file"));
                     reader.readAsText(file);
                 });
+            }
 
-                // Show file size
-                document.getElementById('progress').textContent = 
-                    `Processing ${Math.round(transcript.length/1000)}k document...`;
+            function formatFileSize(bytes) {
+                if (bytes < 1024) return `${bytes} bytes`;
+                if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+                return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+            }
 
-                const response = await fetch('http://localhost:3000/api/generate-quiz', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ transcript })
-                });
+            function escapeHtml(unsafe) {
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
 
-                const data = await response.json();
-                document.getElementById('quizOutput').textContent = data.quiz;
-                document.getElementById('status').textContent = "Quiz generated!";
-                document.getElementById('progress').textContent = 
-                    `Processed in ${data.processedChunks} chunks`;
-                
-            } catch (error) {
-                document.getElementById('status').textContent = "Error generating quiz";
-                document.getElementById('quizOutput').textContent = error.message;
-            } finally {
-                btn.disabled = false;
+            function showSuccess(message) {
+                statusElement.textContent = message;
+                statusElement.className = "status-success";
+            }
+
+            function showError(message) {
+                statusElement.textContent = message;
+                statusElement.className = "status-error";
             }
         });
     </script>
