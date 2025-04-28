@@ -143,4 +143,39 @@ async function transcribeVideoPath(filePath) {
   return fullTranscript;
 }
 
-export { transcribeVideoPath };
+function tryParseJson(jsonString) {
+  try {
+    const cleanString = jsonString
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .replace(/([}\]])\s*([{[])/g, "$1,$2") // Add missing commas between objects
+      .replace(/,\s*]/g, "]") // Remove trailing commas before closing array
+      .trim();
+    return JSON.parse(cleanString);
+  } catch (error) {
+    throw new Error(`Invalid JSON: ${error.message}`);
+  }
+}
+
+function chunkText(text, maxWords = 1500) {
+  // 1500 words ≈ 2000 tokens for Llama
+  const chunks = [];
+  const words = text.split(/\s+/);
+  let currentChunk = [];
+
+  for (const word of words) {
+    if (currentChunk.length >= maxWords) {
+      chunks.push(currentChunk.join(" "));
+      currentChunk = [];
+    }
+    currentChunk.push(word);
+  }
+
+  if (currentChunk.length > 0) {
+    chunks.push(currentChunk.join(" "));
+  }
+
+  return chunks;
+}
+
+export { transcribeVideoPath, tryParseJson, chunkText };
