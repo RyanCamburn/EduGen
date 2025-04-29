@@ -41,9 +41,7 @@ export default function ResultPage() {
     setLoading(false);
     navigate('/quiz', {
       state: {
-        questions: Array.isArray(generatedQuestions)
-          ? generatedQuestions
-          : [generatedQuestions],
+        questions: Array.isArray(generatedQuestions) ? generatedQuestions : [generatedQuestions],
       },
     });
   };
@@ -105,7 +103,8 @@ export default function ResultPage() {
             <Box
               sx={{
                 display: 'flex',
-                justifyContent: 'center',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
                 gap: 4,
                 flexWrap: 'wrap',
               }}
@@ -114,32 +113,42 @@ export default function ResultPage() {
                 elevation={3}
                 sx={{
                   p: 3,
-                  backgroundColor: '#e0e0e0',
-                  minHeight: '300px',
-                  width: '350px',
-                  textAlign: 'left',
+                  backgroundColor: '#2c2c3a',
+                  minHeight: '400px',
+                  flex: 1,
+                  minWidth: '300px',
+                  maxWidth: '45%',
+                  color: 'white',
+                  overflow: 'auto',
                 }}
               >
-                <Typography variant="h6" gutterBottom color="black">
+                <Typography variant="h6" gutterBottom>
                   Video Transcription
                 </Typography>
-                <Typography color="black">{transcription || 'No data received.'}</Typography>
+                <Typography sx={{ whiteSpace: 'pre-wrap' }}>
+                  {transcription || 'No data received.'}
+                </Typography>
               </Paper>
 
               <Paper
                 elevation={3}
                 sx={{
                   p: 3,
-                  backgroundColor: '#d4d4d4',
-                  minHeight: '300px',
-                  width: '350px',
-                  textAlign: 'left',
+                  backgroundColor: '#2c2c3a',
+                  minHeight: '400px',
+                  flex: 1,
+                  minWidth: '300px',
+                  maxWidth: '45%',
+                  color: 'white',
+                  overflow: 'auto',
                 }}
               >
-                <Typography variant="h6" gutterBottom color="black">
+                <Typography variant="h6" gutterBottom>
                   Video Summary
                 </Typography>
-                <Typography color="black">{summary || 'No data received.'}</Typography>
+                <Typography sx={{ whiteSpace: 'pre-wrap' }}>
+                  {summary || 'No data received.'}
+                </Typography>
               </Paper>
             </Box>
           </Grid>
