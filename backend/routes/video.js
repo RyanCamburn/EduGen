@@ -5,7 +5,7 @@ import axios from "axios";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import { transcribeVideo, summarizeTranscription } from "../data/video.js";
-import { tryParseJson, chunkText } from "../data/helpers.js";
+import { prepareFinalQuestions, chunkText } from "../data/helpers.js";
 
 // __dirname polyfill
 const __filename = fileURLToPath(import.meta.url);
@@ -50,20 +50,41 @@ router.route("/question").post(async (req, res) => {
 
     const chunks = chunkText(req.body.transcript);
     let allQuestions = [];
+    let chunkErrors = [];
 
     for (const [index, chunk] of chunks.entries()) {
       try {
-        const prompt = `Extract concepts from this lecture segment:
+        const prompt = `Extract quiz questions from this lecture segment:
 ${chunk}
 
-Respond ONLY with valid JSON in this exact format:
+Requirements:
+1. Create BOTH fill-in-the-blank AND multiple-choice questions
+2. Fill-in-the-blank MUST:
+- Contain "______" placeholder
+- Test lecture-specific knowledge
+3. Multiple-choice MUST:
+- Have 4 plausible options
+- Include one clearly correct answer
+4. Avoid generic knowledge questions
+
+Respond with ONLY valid JSON in this format:
 {
 "concepts": [
 {
-  "concept": "Concept Content (String, multiple sentences)",
+  "type": "fill-blank",
+  "question": "The ______ algorithm is used for this purpose.",
+  "correctAnswer": "specific-technique"
 },
 {
-  "concept": "Concept Content (String, multiple sentences)",
+  "type": "multiple-choice",
+  "question": "What is the main advantage of this approach?",
+  "options": [
+    "Option 1",
+    "Option 2", 
+    "Option 3",
+    "Option 4"
+  ],
+  "correctOption": "Option 3"
 }
 ]
 }`;
@@ -74,71 +95,83 @@ Respond ONLY with valid JSON in this exact format:
             model: "llama3.2",
             prompt: prompt,
             stream: false,
-            options: { temperature: 0.3 },
+            options: {
+              temperature: 0.3,
+              response_format: { type: "json_object" },
+            },
           },
           {
             timeout: 60000,
           }
         );
 
-        const parsed = tryParseJson(response.data.response);
-        if (!parsed?.concepts) {
-          throw new Error("Invalid response format from LLM");
+        // Extract and validate JSON
+        let jsonString = response.data.response.trim();
+        const jsonStart = jsonString.indexOf("{");
+        const jsonEnd = jsonString.lastIndexOf("}") + 1;
+
+        if (jsonStart === -1 || jsonEnd === 0) {
+          throw new Error("No JSON found in response");
         }
-        allQuestions.push(...parsed.concepts);
+
+        jsonString = jsonString.slice(jsonStart, jsonEnd);
+        const parsed = JSON.parse(jsonString);
+
+        if (!parsed?.concepts || !Array.isArray(parsed.concepts)) {
+          throw new Error("Invalid concepts array in response");
+        }
+
+        // Validate questions
+        const validQuestions = parsed.concepts.filter((q) => {
+          if (q.type === "fill-blank") {
+            return q.question?.includes("______") && q.correctAnswer;
+          } else if (q.type === "multiple-choice") {
+            return q.options?.length === 4 && q.correctOption;
+          }
+          return false;
+        });
+
+        if (validQuestions.length > 0) {
+          allQuestions.push(...validQuestions);
+        } else {
+          throw new Error("No valid questions in chunk");
+        }
       } catch (error) {
-        console.error(`Error processing chunk ${index + 1}:`, error.message);
+        chunkErrors.push({
+          chunk: index + 1,
+          error: error.message,
+        });
         continue;
       }
     }
 
-    const combinePrompt = `You must act as a JSON generator.
+    // Prepare final questions with flexible counts
+    const { fillBlank, multipleChoice } = prepareFinalQuestions(allQuestions);
+    const finalQuestions = [...fillBlank, ...multipleChoice];
 
-Your output must be ONLY valid JSON and nothing else. No introductions, no explanations, no notes.
-Combine these into a final quiz with exactly 6 fill-in-the-blank and 4 multiple-choice questions:
-${JSON.stringify(allQuestions)}
-
-Respond ONLY with valid JSON in this format:
-{
-"questions": [
-{
-  "type": "fill-blank",
-  "question": "The ______ is the powerhouse of the cell.",
-  "correctAnswer": "mitochondria"
-},
-{
-  "type": "multiple-choice",
-  "question": "What is the chemical symbol for gold?",
-  "options": ["Au", "Ag", "Fe", "Hg"],
-  "correctOption": "Au"
-}
-]
-}`;
-
-    const finalResponse = await axios.post(
-      "http://localhost:11434/api/generate",
-      {
-        model: "llama3.2",
-        prompt: combinePrompt,
-        stream: false,
-        options: { temperature: 0.2 },
-      },
-      {
-        timeout: 60000,
-      }
-    );
-
-    const finalQuiz = tryParseJson(finalResponse.data.response);
-    if (!finalQuiz?.questions) {
-      throw new Error("Invalid final quiz format");
+    // Minimum requirement: at least 2 of each type
+    if (fillBlank.length < 2 || multipleChoice.length < 2) {
+      throw new Error(
+        `Insufficient questions: ${fillBlank.length} fill-blank and ${multipleChoice.length} multiple-choice`
+      );
     }
 
-    res.status(200).json(finalQuiz);
+    res.status(200).json({
+      questions: finalQuestions,
+      stats: {
+        chunksProcessed: chunks.length,
+        chunksWithErrors: chunkErrors.length,
+        totalQuestions: finalQuestions.length,
+        fillBlankCount: fillBlank.length,
+        multipleChoiceCount: multipleChoice.length,
+      },
+    });
   } catch (error) {
     console.error("Server error:", error);
     res.status(500).json({
       error: "Quiz generation failed",
       details: error.message,
+      suggestion: "Try with a more detailed transcript or different phrasing",
     });
   }
 });
