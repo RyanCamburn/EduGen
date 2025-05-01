@@ -5,6 +5,7 @@ import FormData from "form-data";
 import axios from "axios";
 import os from "os";
 import dotenv from "dotenv";
+import { encode } from "gpt-3-encoder";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 
@@ -143,4 +144,89 @@ async function transcribeVideoPath(filePath) {
   return fullTranscript;
 }
 
-export { transcribeVideoPath };
+function chunkText(text, maxTokens = 3000) {
+  const chunks = [];
+  const words = text.split(/\s+/);
+  let currentChunk = [];
+  let currentTokenCount = 0;
+
+  for (const word of words) {
+    const wordTokens = encode(word).length;
+    if (currentTokenCount + wordTokens > maxTokens) {
+      chunks.push(currentChunk.join(" "));
+      currentChunk = [];
+      currentTokenCount = 0;
+    }
+    currentChunk.push(word);
+    currentTokenCount += wordTokens;
+  }
+
+  if (currentChunk.length > 0) {
+    chunks.push(currentChunk.join(" "));
+  }
+
+  return chunks;
+}
+
+// Helper function to remove duplicate questions
+function removeDuplicateQuestions(questions) {
+  const seen = new Set();
+  return questions.filter((q) => {
+    const key = q.question.toLowerCase().trim();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+// Helper function to filter out generic questions
+function filterGenericQuestions(questions) {
+  const genericPatterns = [
+    /capital of/i,
+    /largest planet/i,
+    /chemical symbol/i,
+    /alan turing/i,
+    /color of the sky/i,
+    /powerhouse of the cell/i,
+  ];
+
+  return questions.filter((q) => {
+    return !genericPatterns.some((pattern) => pattern.test(q.question));
+  });
+}
+
+// Helper function to prepare final questions with flexible counts
+// Helper function to prepare final questions with flexible counts
+function prepareFinalQuestions(allQuestions) {
+  // Separate question types
+  let fillBlank = allQuestions.filter((q) => q.type === "fill-blank");
+  let multipleChoice = allQuestions.filter((q) => q.type === "multiple-choice");
+
+  // Remove duplicates
+  fillBlank = removeDuplicateQuestions(fillBlank);
+  multipleChoice = removeDuplicateQuestions(multipleChoice);
+
+  // Filter out generic questions
+  fillBlank = filterGenericQuestions(fillBlank);
+  multipleChoice = filterGenericQuestions(multipleChoice);
+
+  // Sort by length (longer questions tend to be more specific)
+  fillBlank.sort((a, b) => b.question.length - a.question.length);
+  multipleChoice.sort((a, b) => b.question.length - a.question.length);
+
+  // Calculate proportional distribution
+  const totalQuestions = Math.min(Math.max(allQuestions.length, 7), 12);
+  const fillBlankRatio = 0.6; // 60% fill-in-the-blank
+  const fillBlankCount = Math.max(
+    3,
+    Math.floor(totalQuestions * fillBlankRatio)
+  );
+  const multipleChoiceCount = Math.max(2, totalQuestions - fillBlankCount);
+
+  return {
+    fillBlank: fillBlank.slice(0, fillBlankCount),
+    multipleChoice: multipleChoice.slice(0, multipleChoiceCount),
+  };
+}
+
+export { transcribeVideoPath, chunkText, prepareFinalQuestions };

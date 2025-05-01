@@ -18,13 +18,13 @@ export default function ResultPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const { transcription, summary } = state || {};
-  const [questionText, setQuestionText] = React.useState('');
+  const [questions, setQuestions] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
-  
+
   const generateQuestionFromText = async (text) => {
     try {
       const response = await axios.post('http://localhost:3000/video/question', {
-        text,
+        transcript: text,
       });
       return response.data;
     } catch (error) {
@@ -36,8 +36,12 @@ export default function ResultPage() {
   const handleGenerateQuestion = async () => {
     if (!transcription) return;
     setLoading(true);
-    const question = await generateQuestionFromText(transcription);
-    setQuestionText(question);
+    const data = await generateQuestionFromText(transcription);
+    if (data.questions) {
+      setQuestions(data.questions);
+    } else {
+      setQuestions([]);
+    }
     setLoading(false);
   };
 
@@ -149,14 +153,23 @@ export default function ResultPage() {
             {loading ? 'Generating...' : 'Generate Questions'}
           </Button>
 
-          {questionText && (
+          {questions.length > 0 && (
             <Paper sx={{ p: 2, backgroundColor: '#f4f4f4', width: '100%', maxWidth: 800 }}>
               <Typography variant="h6" gutterBottom color="black">
-                Generated Question
+                Generated Questions
               </Typography>
-              <Typography color="black" sx={{ whiteSpace: 'pre-wrap' }}>
-                {questionText}
-              </Typography>
+              <ul color="black">
+                {questions.map((q, index) => (
+                  <li key={index}>
+                    <strong>
+                      {q.type === 'fill-blank' ? 'Fill-in-the-blank' : 'Multiple Choice'}:
+                    </strong>{' '}
+                    {q.question}
+                    {q.type === 'fill-blank' ? '' : q.options}
+                    {q.type === 'fill-blank' ? q.correctAnswer : q.correctOption}
+                  </li>
+                ))}
+              </ul>
             </Paper>
           )}
         </Stack>
