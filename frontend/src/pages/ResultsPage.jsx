@@ -1,3 +1,4 @@
+// ResultPage.jsx
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -11,39 +12,12 @@ import {
   Toolbar,
   Container,
 } from '@mui/material';
-import axios from 'axios';
 import logo from '../assets/logo.svg';
 
 export default function ResultPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const { transcription, summary } = state || {};
-  const [questions, setQuestions] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
-
-  const generateQuestionFromText = async (text) => {
-    try {
-      const response = await axios.post('http://localhost:3000/video/question', {
-        transcript: text,
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Question generation failed:', error);
-      return 'Error generating question.';
-    }
-  };
-
-  const handleGenerateQuestion = async () => {
-    if (!transcription) return;
-    setLoading(true);
-    const data = await generateQuestionFromText(transcription);
-    if (data.questions) {
-      setQuestions(data.questions);
-    } else {
-      setQuestions([]);
-    }
-    setLoading(false);
-  };
 
   return (
     <Box sx={{ backgroundColor: '#1a1a2e', minHeight: '100vh' }}>
@@ -51,7 +25,7 @@ export default function ResultPage() {
       <AppBar position="static" sx={{ backgroundColor: '#3d3d50' }}>
         <Toolbar sx={{ justifyContent: 'space-between' }}>
           <Stack direction="row" spacing={2} alignItems="center">
-            <Button size="small" variant="contained" onClick={() => navigate('/')}>
+            <Button size="small" variant="contained" onClick={() => navigate('/home')}>
               <img src={logo} alt="Logo" style={{ width: 50, height: 50 }} />
             </Button>
             <Typography variant="h6" color="white">
@@ -59,7 +33,7 @@ export default function ResultPage() {
             </Typography>
           </Stack>
           <Stack direction="row" spacing={2}>
-            <Button variant="outlined" onClick={() => navigate('/')}>
+            <Button variant="outlined" onClick={() => navigate('/home')}>
               Home
             </Button>
           </Stack>
@@ -97,7 +71,7 @@ export default function ResultPage() {
             </Paper>
           </Grid>
 
-          {/* Right content: Centered Transcription & Summary cards */}
+          {/* Transcription and Summary Cards */}
           <Grid item xs={12} md={9}>
             <Box
               sx={{
@@ -148,30 +122,14 @@ export default function ResultPage() {
             Download Result
           </Button>
         </Stack>
-        <Stack direction="column" spacing={2} alignItems="center" mt={4}>
-          <Button variant="contained" onClick={handleGenerateQuestion} disabled={loading}>
-            {loading ? 'Generating...' : 'Generate Questions'}
-          </Button>
 
-          {questions.length > 0 && (
-            <Paper sx={{ p: 2, backgroundColor: '#f4f4f4', width: '100%', maxWidth: 800 }}>
-              <Typography variant="h6" gutterBottom color="black">
-                Generated Questions
-              </Typography>
-              <ul color="black">
-                {questions.map((q, index) => (
-                  <li key={index}>
-                    <strong>
-                      {q.type === 'fill-blank' ? 'Fill-in-the-blank' : 'Multiple Choice'}:
-                    </strong>{' '}
-                    {q.question}
-                    {q.type === 'fill-blank' ? '' : q.options}
-                    {q.type === 'fill-blank' ? q.correctAnswer : q.correctOption}
-                  </li>
-                ))}
-              </ul>
-            </Paper>
-          )}
+        <Stack direction="column" spacing={2} alignItems="center" mt={4}>
+          <Button
+            variant="contained"
+            onClick={() => navigate('/quiz', { state: { transcription } })}
+          >
+            Generate Questions
+          </Button>
         </Stack>
       </Container>
     </Box>

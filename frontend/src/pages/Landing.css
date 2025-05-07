@@ -1,0 +1,131 @@
+:root {
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    color-scheme: light dark;
+    color: rgba(255, 255, 255, 0.87);
+    background-color: #1e1e2f;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: inherit;
+  }
+  
+  .edugen-landing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+    background: linear-gradient(135deg, #1e1e2f 0%, #2c2c3e 100%);
+  }
+  
+  .hero-section {
+    text-align: center;
+    padding: 4rem 2rem;
+    width: 100%;
+    max-width: 1200px;
+    animation: fadeIn 1s ease-out;
+  }
+  
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  
+  .title {
+    font-size: 4rem;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(45deg, #646cff, #535bf2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: slideDown 0.8s ease-out;
+  }
+  
+  .subtitle {
+    font-size: 1.5rem;
+    max-width: 600px;
+    margin: 0;
+    color: #ccc;
+    animation: slideUp 0.8s ease-out;
+  }
+  
+  .features-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    width: 100%;
+    max-width: 1200px;
+    padding: 2rem;
+    margin: 2rem 0;
+  }
+  
+  .feature-card {
+    background: rgba(44, 44, 62, 0.7);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: fadeIn 0.8s ease-out;
+  }
+  
+  .feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  }
+  
+  .feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .feature-card h3 {
+    color: #ffffff;
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+  }
+  
+  .feature-card p {
+    color: #cccccc;
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  
+  .cta-section {
+    text-align: center;
+    padding: 4rem 2rem;
+    width: 100%;
+    max-width: 1200px;
+    animation: fadeIn 1s ease-out;
+  }
+  
+  .cta-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: #ffffff;
+  }
+  
+  .cta-button {
+    border-radius: 8px;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: inherit;
+    background: linear-gradient(45deg, #646cff, #535bf2);
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
