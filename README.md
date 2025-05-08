@@ -8,6 +8,10 @@ Upload `.mp3` or `.mp4` files to generate transcriptions. Based on the transcrip
    - Add your OpenAI API key to the `.env` file located in `backend/.env`.
   
 2. **Download AI Model**
+     - Download Ollama
+       ```bash
+       https://ollama.com
+       ```
      - In another separate terminal, download the AI model:
        ```bash
        ollama run llama3.2
