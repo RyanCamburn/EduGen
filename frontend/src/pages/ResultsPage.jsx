@@ -17,7 +17,7 @@ import logo from '../assets/logo.svg';
 export default function ResultPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { transcription, summary } = state || {};
+  const { videoId, transcription, summary } = state || {};
 
   return (
     <Box sx={{ backgroundColor: '#1a1a2e', minHeight: '100vh' }}>
@@ -126,7 +126,7 @@ export default function ResultPage() {
         <Stack direction="column" spacing={2} alignItems="center" mt={4}>
           <Button
             variant="contained"
-            onClick={() => navigate('/quiz', { state: { transcription } })}
+            onClick={() => navigate('/quiz', { state: { videoId, transcription } })}
           >
             Generate Questions
           </Button>
