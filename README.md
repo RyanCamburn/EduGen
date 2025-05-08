@@ -12,7 +12,7 @@ Upload `.mp3` or `.mp4` files to generate transcriptions. Based on the transcrip
        ```bash
        https://ollama.com
        ```
-     - In another separate terminal, download the AI model:
+     - In your terminal, download the AI model:
        ```bash
        ollama run llama3.2
        ```
