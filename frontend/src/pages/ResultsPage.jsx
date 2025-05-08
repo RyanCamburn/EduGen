@@ -25,6 +25,7 @@ export default function ResultPage() {
     try {
       const response = await axios.post('http://localhost:3000/video/question', {
         transcript: text,
+        videoId
       });
       return response.data;
     } catch (error) {
