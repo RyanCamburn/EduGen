@@ -47,7 +47,7 @@ export default function HomePage() {
         },
       });
 
-      // ✅ Expecting { text: '...' } from backend
+      const videoId = transcribeRes.data.videoId;
       const transcription = transcribeRes.data.transcription;
 
       if (!transcription || transcription.trim() === '') {
@@ -62,6 +62,7 @@ export default function HomePage() {
       // 3. Navigate to result page with both
       navigate('/results', {
         state: {
+          videoId,
           transcription,
           summary,
         },

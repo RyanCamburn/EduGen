@@ -6,6 +6,8 @@ import { fileURLToPath } from "url";
 import { dirname } from "path";
 import { transcribeVideo, summarizeTranscription } from "../data/video.js";
 import { prepareFinalQuestions, chunkText } from "../data/helpers.js";
+import { ObjectId, UUID } from 'mongodb';
+import { transcriptions } from '../config/mongoCollections.js';
 
 // __dirname polyfill
 const __filename = fileURLToPath(import.meta.url);
@@ -32,11 +34,35 @@ router.post("/transcribe", upload.single("file"), async (req, res) => {
 
     const transcription = await transcribeVideo(req.file.path);
     const summary = await summarizeTranscription(transcription);
+
+    const videoData = {
+      transcription,
+      summary,
+      questions: []
+    }
+
+    let videoId;
+
+    try{
+      const transcriptionCollection = await transcriptions();
+      const insertInfo = await transcriptionCollection.insertOne(videoData);
+      if (!insertInfo.acknowledged || !insertInfo.insertedId)
+        throw 'Could not add video data to database!';
+      videoId = insertInfo.insertedId.toString();
+    } catch(e){
+      res.status(500).json({error: "Something went wrong while adding the video to the database"});
+    }
+    
+
     console.log(
       "⬅️ Final transcription sent to client:",
       transcription.slice(0, 200)
     ); // preview
-    res.status(200).json({ transcription, summary });
+    res.status(200).json({ 
+      videoId,
+      transcription,
+      summary 
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -44,8 +70,11 @@ router.post("/transcribe", upload.single("file"), async (req, res) => {
 
 router.route("/question").post(async (req, res) => {
   try {
-    if (!req.body?.transcript) {
-      return res.status(400).json({ error: "Transcript is required" });
+    const { transcript, videoId } = req.body;
+    if (!transcript || !videoId) {
+      return res
+        .status(400)
+        .json({ error: "Both transcript AND videoId are required" });
     }
 
     const chunks = chunkText(req.body.transcript);
@@ -154,6 +183,15 @@ Respond with ONLY valid JSON in this format:
       throw new Error(
         `Insufficient questions: ${fillBlank.length} fill-blank and ${multipleChoice.length} multiple-choice`
       );
+    }
+
+    const transcriptionCollection = await transcriptions();
+    const result = await transcriptionCollection.updateOne(
+      { _id: new ObjectId(videoId) },
+      { $set: { questions: finalQuestions } }
+    );
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: "Video not found" });
     }
 
     res.status(200).json({
