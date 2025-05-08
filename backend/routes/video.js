@@ -6,8 +6,8 @@ import { fileURLToPath } from "url";
 import { dirname } from "path";
 import { transcribeVideo, summarizeTranscription } from "../data/video.js";
 import { prepareFinalQuestions, chunkText } from "../data/helpers.js";
-import { ObjectId, UUID } from 'mongodb';
-import { transcriptions } from '../config/mongoCollections.js';
+import { ObjectId, UUID } from "mongodb";
+import { transcriptions } from "../config/mongoCollections.js";
 
 // __dirname polyfill
 const __filename = fileURLToPath(import.meta.url);
@@ -26,6 +26,17 @@ const upload = multer({ storage });
 
 const router = Router();
 
+router.get("/videos", async (req, res) => {
+  try {
+    const transcriptionCollection = await transcriptions();
+    const all = await transcriptionCollection.find({}).toArray();
+    res.status(200).json(all);
+  } catch (error) {
+    console.error("Error fetching transcriptions:", error);
+    res.status(500).json({ error: "Failed to fetch transcriptions" });
+  }
+});
+
 router.post("/transcribe", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
@@ -38,30 +49,31 @@ router.post("/transcribe", upload.single("file"), async (req, res) => {
     const videoData = {
       transcription,
       summary,
-      questions: []
-    }
+      questions: [],
+    };
 
     let videoId;
 
-    try{
+    try {
       const transcriptionCollection = await transcriptions();
       const insertInfo = await transcriptionCollection.insertOne(videoData);
       if (!insertInfo.acknowledged || !insertInfo.insertedId)
-        throw 'Could not add video data to database!';
+        throw "Could not add video data to database!";
       videoId = insertInfo.insertedId.toString();
-    } catch(e){
-      res.status(500).json({error: "Something went wrong while adding the video to the database"});
+    } catch (e) {
+      res.status(500).json({
+        error: "Something went wrong while adding the video to the database",
+      });
     }
-    
 
     console.log(
       "⬅️ Final transcription sent to client:",
       transcription.slice(0, 200)
     ); // preview
-    res.status(200).json({ 
+    res.status(200).json({
       videoId,
       transcription,
-      summary 
+      summary,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -94,6 +106,7 @@ Requirements:
 3. Multiple-choice MUST:
 - Have 4 plausible options
 - Include one clearly correct answer
+- correctOption must be the exact text of one of the options for the question
 4. Avoid generic knowledge questions
 
 Respond with ONLY valid JSON in this format:
@@ -101,7 +114,7 @@ Respond with ONLY valid JSON in this format:
 "concepts": [
 {
   "type": "fill-blank",
-  "question": "The ______ algorithm is used for this purpose.",
+  "question": "The ______ algorithm is used for this purpose: (Insert purpose).",
   "correctAnswer": "specific-technique"
 },
 {
@@ -179,7 +192,7 @@ Respond with ONLY valid JSON in this format:
     const finalQuestions = [...fillBlank, ...multipleChoice];
 
     // Minimum requirement: at least 2 of each type
-    if (fillBlank.length < 2 || multipleChoice.length < 2) {
+    if (fillBlank.length < 1 || multipleChoice.length < 1) {
       throw new Error(
         `Insufficient questions: ${fillBlank.length} fill-blank and ${multipleChoice.length} multiple-choice`
       );

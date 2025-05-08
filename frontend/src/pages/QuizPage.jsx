@@ -22,12 +22,29 @@ export default function QuizPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const { videoId, transcription } = state || {};
+  const [lecturesWithQuestions, setLecturesWithQuestions] = useState([]);
 
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchLectures = async () => {
+      try {
+        const res = await axios.get('http://localhost:3000/video/videos');
+        const filtered = res.data.filter(
+          (doc) => Array.isArray(doc.questions) && doc.questions.length > 0
+        );
+        setLecturesWithQuestions(filtered);
+      } catch (err) {
+        console.error('Failed to fetch lecture list', err);
+      }
+    };
+
+    fetchLectures();
+  }, []);
 
   const handleChange = (index, value) => {
     setAnswers((prev) => ({ ...prev, [index]: value }));
@@ -110,6 +127,31 @@ export default function QuizPage() {
         <Typography variant="h4" align="center" color="white" gutterBottom>
           AI-Generated Quiz
         </Typography>
+
+        {lecturesWithQuestions.length > 0 && (
+          <Box sx={{ mt: 2, mb: 4 }}>
+            <Typography variant="h6" color="white" gutterBottom>
+              Load Previous Quizzes
+            </Typography>
+            <Stack direction="row" spacing={2} flexWrap="wrap">
+              {lecturesWithQuestions.map((lecture, index) => (
+                <Button
+                  key={lecture._id}
+                  variant="outlined"
+                  color="inherit"
+                  onClick={() => {
+                    setQuestions(lecture.questions);
+                    setAnswers({});
+                    setScore(0);
+                    setSubmitted(false);
+                  }}
+                >
+                  {`Lecture ${index + 1}`}
+                </Button>
+              ))}
+            </Stack>
+          </Box>
+        )}
 
         {questions.length === 0 && !loading ? (
           <Stack alignItems="center" spacing={2} mt={4}>
@@ -206,11 +248,11 @@ export default function QuizPage() {
                 Generate New Questions
               </Button>
             </Stack>
-            {/* {submitted && (
+            {submitted && (
               <Typography variant="h5" align="center" color="lightgreen" mt={5}>
                 Your Score: {score} / {questions.length}
               </Typography>
-            )} */}
+            )}
           </Stack>
         )}
       </Container>
