@@ -17,7 +17,7 @@ import logo from '../assets/logo.svg';
 export default function ResultPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { transcription, summary } = state || {};
+  const { videoId, transcription, summary } = state || {};
   const [questions, setQuestions] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
 
@@ -25,6 +25,7 @@ export default function ResultPage() {
     try {
       const response = await axios.post('http://localhost:3000/video/question', {
         transcript: text,
+        videoId
       });
       return response.data;
     } catch (error) {

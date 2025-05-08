@@ -38,14 +38,14 @@ export default function HomePage() {
         },
       });
 
-
+      const videoId = transcribeRes.data.videoId
       const transcription = transcribeRes.data.transcription;
-
       const summary = transcribeRes.data.summary;
       
       // 3. Navigate to result page with both
       navigate('/results', {
         state: {
+          videoId,
           transcription,
           summary,
         },
