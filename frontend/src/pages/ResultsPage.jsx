@@ -18,33 +18,6 @@ export default function ResultPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const { videoId, transcription, summary } = state || {};
-  const [questions, setQuestions] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
-
-  const generateQuestionFromText = async (text) => {
-    try {
-      const response = await axios.post('http://localhost:3000/video/question', {
-        transcript: text,
-        videoId
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Question generation failed:', error);
-      return 'Error generating question.';
-    }
-  };
-
-  const handleGenerateQuestion = async () => {
-    if (!transcription) return;
-    setLoading(true);
-    const data = await generateQuestionFromText(transcription);
-    if (data.questions) {
-      setQuestions(data.questions);
-    } else {
-      setQuestions([]);
-    }
-    setLoading(false);
-  };
 
   return (
     <Box sx={{ backgroundColor: '#1a1a2e', minHeight: '100vh' }}>
@@ -153,7 +126,7 @@ export default function ResultPage() {
         <Stack direction="column" spacing={2} alignItems="center" mt={4}>
           <Button
             variant="contained"
-            onClick={() => navigate('/quiz', { state: { transcription } })}
+            onClick={() => navigate('/quiz', { state: { videoId, transcription } })}
           >
             Generate Questions
           </Button>

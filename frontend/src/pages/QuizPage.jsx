@@ -21,7 +21,7 @@ import logo from '../assets/logo.svg';
 export default function QuizPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { transcription } = state || {};
+  const { videoId, transcription } = state || {};
 
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -72,6 +72,7 @@ export default function QuizPage() {
     try {
       const response = await axios.post('http://localhost:3000/video/question', {
         transcript: transcription,
+        videoId: videoId,
       });
       if (response.data?.questions) {
         setQuestions(response.data.questions);
@@ -148,7 +149,8 @@ export default function QuizPage() {
                   sx={{ p: 3, backgroundColor: '#2c2c3e', color: 'white', borderRadius: 2 }}
                 >
                   <Typography variant="h6" gutterBottom>
-                    Question {index + 1} ({q.type === 'fill-blank' ? 'Fill-in-the-blank' : 'Multiple Choice'})
+                    Question {index + 1} (
+                    {q.type === 'fill-blank' ? 'Fill-in-the-blank' : 'Multiple Choice'})
                   </Typography>
                   <Typography sx={{ mb: 2 }}>{q.question}</Typography>
 
