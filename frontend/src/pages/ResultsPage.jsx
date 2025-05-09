@@ -1,5 +1,5 @@
 // ResultPage.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
@@ -13,11 +13,26 @@ import {
   Container,
 } from '@mui/material';
 import logo from '../assets/logo.svg';
+import axios from 'axios';
+import { useEffect } from 'react';
 
 export default function ResultPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const { videoId, transcription, summary } = state || {};
+  const [transcriptions, setTranscriptions] = useState([]);
+
+  useEffect(() => {
+    const fetchTranscriptions = async () => {
+      try {
+        const res = await axios.get('http://localhost:3000/video/videos');
+        setTranscriptions(res.data);
+      } catch (err) {
+        console.error('Failed to fetch transcriptions', err);
+      }
+    };
+    fetchTranscriptions();
+  }, [setTranscriptions]);
 
   return (
     <Box sx={{ backgroundColor: '#1a1a2e', minHeight: '100vh' }}>
@@ -58,15 +73,25 @@ export default function ResultPage() {
                 Previous Transcriptions
               </Typography>
               <Stack spacing={2}>
-                <Button variant="outlined" fullWidth color="inherit">
-                  Lecture 1
-                </Button>
-                <Button variant="outlined" fullWidth color="inherit">
-                  Lecture 2
-                </Button>
-                <Button variant="outlined" fullWidth color="inherit">
-                  Meeting Notes
-                </Button>
+                {transcriptions.map((t, index) => (
+                  <Button
+                    key={t._id}
+                    variant="outlined"
+                    fullWidth
+                    color="inherit"
+                    onClick={() =>
+                      navigate('/results', {
+                        state: {
+                          videoId: t._id,
+                          transcription: t.transcription,
+                          summary: t.summary,
+                        },
+                      })
+                    }
+                  >
+                    {`Lecture ${index + 1}`}
+                  </Button>
+                ))}
               </Stack>
             </Paper>
           </Grid>
